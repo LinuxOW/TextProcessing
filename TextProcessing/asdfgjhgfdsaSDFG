@@ -1,0 +1,75 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace TextProcessing
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            string filePath = GetFilePath();
+            if (string.IsNullOrEmpty(filePath)) return;
+
+            try
+            {
+                var wordCounts = ProcessFile(filePath);
+                OutputResults(wordCounts);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+        }
+
+        private static string GetFilePath()
+        {
+            Console.WriteLine("Enter the full path of the text file: ");
+            return Console.ReadLine();
+        }
+
+        private static Dictionary<string, int> ProcessFile(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("The file does not exist. Exiting...");
+                return null;
+            }
+
+            string[] lines = File.ReadAllLines(filePath);
+            var wordCounts = new Dictionary<string, int>();
+
+            foreach (string line in lines)
+            {
+                string cleanedLine = Regex.Replace(line, @"[^\w\s]", "").ToLower();
+                string[] words = cleanedLine.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+                foreach (string word in words)
+                {
+                    if (wordCounts.ContainsKey(word))
+                    {
+                        wordCounts[word]++;
+                    }
+                    else
+                    {
+                        wordCounts[word] = 1;
+                    }
+                }
+            }
+
+            return wordCounts;
+        }
+
+        private static void OutputResults(Dictionary<string, int> wordCounts)
+        {
+            Console.WriteLine("\nWord occurrences:");
+            foreach (var pair in wordCounts.OrderBy(p => p.Key))
+            {
+                Console.WriteLine($"{pair.Key}: {pair.Value}");
+            }
+            Console.WriteLine($"\nTotal number of unique words: {wordCounts.Count}");
+        }
+    }
+}
